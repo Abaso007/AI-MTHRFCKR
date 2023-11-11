@@ -16,7 +16,7 @@ from audio_util import urban_labels
                 
 def maybe_copy_file(src, dst):
     if not os.path.exists(dst):
-        print('{} => {}'.format(src, dst))
+        print(f'{src} => {dst}')
         copyfile(src, dst)
 
 
@@ -26,7 +26,7 @@ def convert_wav(src_wav, dst_wav, subtype='PCM_16'):
 
     Such as, convert `PCM_24` to `PCM_16`
     """
-    assert os.path.exists(src_wav), "{} not exists!".format(src_wav)
+    assert os.path.exists(src_wav), f"{src_wav} not exists!"
     data, sr = soundfile.read(src_wav)
     soundfile.write(dst_wav, data, sr, subtype=subtype)
 
@@ -37,8 +37,10 @@ def convert_urban_pcm24_to_pcm16():
     converted_wav_paths = []
     for dsrc, ddst in zip(src_dir, dst_dir):
         maybe_create_directory(ddst)
-        wav_files = filter(lambda FP: FP if FP.endswith('.wav') else None, 
-                           [FP for FP in os.listdir(dsrc)])
+        wav_files = filter(
+            lambda FP: FP if FP.endswith('.wav') else None,
+            list(os.listdir(dsrc)),
+        )
         for wav_file in wav_files:
             src_wav, dst_wav = os.path.join(dsrc, wav_file), os.path.join(ddst, wav_file)
             convert_wav(src_wav, dst_wav, subtype='PCM_16')
@@ -51,15 +53,15 @@ def arange_urban_sound_file_by_class():
     """Arange urban sound file by it's class."""
     def _listdir(d):
       return [os.path.join(d, f) for f in sorted(os.listdir(d))]
-    
+
     src_path = '/data1/data/UrbanSound8K-16bit/audio'
     dst_dir = '/data1/data/UrbanSound8K-16bit/audio-classfied'
-    
-    src_paths = list()
+
+    src_paths = []
     for d in _listdir(src_path):
       wavs = filter(lambda x: x.endswith('.wav'), _listdir(d))
       src_paths.extend(list(wavs))
-    
+
     CLASSES = [
         'air conditioner',
         'car horn',
@@ -82,7 +84,6 @@ def arange_urban_sound_file_by_class():
 if __name__ == '__main__':
     convert_urban_pcm24_to_pcm16()
     arange_urban_sound_file_by_class()
-    pass
         
     
 

@@ -132,9 +132,9 @@ def _wav_files_and_labels():
         result = { label:wav_file_list }
     """
     if not util.is_exists(FLAGS.wavfile_parent_dir):
-        tf.logging.error("Can not find wav files at: {}, or you can download one at "
-            "https://serv.cusp.nyu.edu/projects/urbansounddataset.".format(
-                FLAGS.wavfile_parent_dir))
+        tf.logging.error(
+            f"Can not find wav files at: {FLAGS.wavfile_parent_dir}, or you can download one at https://serv.cusp.nyu.edu/projects/urbansounddataset."
+        )
         exit(1)
 
 
@@ -152,9 +152,9 @@ def _wav_files_and_labels():
             continue
         if dir_name[0] == '.':
             continue
-        tf.logging.info("Looking for wavs in '" + dir_name + "'")
+        tf.logging.info(f"Looking for wavs in '{dir_name}'")
         for extension in extensions:
-            file_glob = os.path.join(FLAGS.wavfile_parent_dir, dir_name, '*.' + extension)
+            file_glob = os.path.join(FLAGS.wavfile_parent_dir, dir_name, f'*.{extension}')
             file_list.extend(gfile.Glob(file_glob))
         if not file_list:
             tf.logging.warning('No files found')
@@ -164,8 +164,8 @@ def _wav_files_and_labels():
                 'which may cause issues.')
         elif len(file_list) > MAX_NUM_PER_CLASS:
             tf.logging.warning(
-                'WARNING: Folder {} has more than {} wavs. Some wavs will '
-                'never be selected.'.format(dir_name, MAX_NUM_PER_CLASS))
+                f'WARNING: Folder {dir_name} has more than {MAX_NUM_PER_CLASS} wavs. Some wavs will never be selected.'
+            )
         # label_name = re.sub(r'[^a-z0-9]+', ' ', dir_name.lower())
         wav_files.extend(file_list)
         wav_labels.extend([label_idx]*len(file_list))
@@ -179,23 +179,24 @@ def _create_records():
     util.maybe_create_directory(FLAGS.records_dir)
     _check_vggish_ckpt_exists()
     wav_files, wav_labels = _wav_files_and_labels()
-    tf.logging.info('Possible labels: {}'.format(set(wav_labels)))
+    tf.logging.info(f'Possible labels: {set(wav_labels)}')
     train, test, val = util.train_test_val_split(wav_files, wav_labels)
     with VGGishExtractor(vggish_ckpt_path,
-                         vggish_pca_path,
-                         params.VGGISH_INPUT_TENSOR_NAME,
-                         params.VGGISH_OUTPUT_TENSOR_NAME) as ve:
+                             vggish_pca_path,
+                             params.VGGISH_INPUT_TENSOR_NAME,
+                             params.VGGISH_OUTPUT_TENSOR_NAME) as ve:
         
         train_x, train_y = train
         ve.create_records(train_records_path, train_x, train_y)
-        
+
         test_x, test_y = test
         ve.create_records(test_records_path, test_x, test_y)
-        
+
         val_x, val_y = val
         ve.create_records(val_records_path, val_x, val_y)
-        tf.logging.info('Dataset size: Train-{} Test-{} Val-{}'.format(
-            len(train_y), len(test_y), len(val_y)))
+        tf.logging.info(
+            f'Dataset size: Train-{len(train_y)} Test-{len(test_y)} Val-{len(val_y)}'
+        )
 
 def _get_records_iterator(records_path, batch_size):
     """Get records iterator"""
@@ -239,13 +240,16 @@ def main(_):
         summary_op = tf.summary.merge_all()
         summary_writer = tf.summary.FileWriter(tensorboard_dir, graph=sess.graph)
         saver = tf.train.Saver()
-        
+
         init = tf.global_variables_initializer()
         sess.run(init)
 
 
         checkpoint_path = os.path.join(audio_ckpt_dir, params.AUDIO_CHECKPOINT_NAME)
-        if util.is_exists(checkpoint_path+'.meta') and FLAGS.restore_if_possible:
+        if (
+            util.is_exists(f'{checkpoint_path}.meta')
+            and FLAGS.restore_if_possible
+        ):
             saver.restore(sess, checkpoint_path)
 
         # training and validation loop
@@ -265,7 +269,9 @@ def main(_):
                                                 feed_dict={features_tensor: tr_features, labels_tensor: tr_labels})
                 train_batch_losses.append(loss)
                 summary_writer.add_summary(summaries, num_steps)
-                print('Epoch {}/{}, Step {}: train loss {}'.format(epoch, params.NUM_EPOCHS, num_steps, loss))
+                print(
+                    f'Epoch {epoch}/{params.NUM_EPOCHS}, Step {num_steps}: train loss {loss}'
+                )
 
             # compute the train epoch loss:
             train_epoch_loss = np.mean(train_batch_losses)
@@ -316,7 +322,7 @@ def main(_):
                     'l{loss:.2f}_{name}'.format(loss=val_loss, name=params.AUDIO_CHECKPOINT_NAME))
                 saver.save(sess, checkpoint_path)
                 saver.save(sess, checkpoint_path2)
-                print("checkpoint saved in file: %s" % checkpoint_path)
+                print(f"checkpoint saved in file: {checkpoint_path}")
 
                 # update the top 5 val losses:
                 index = best_epoch_losses.index(min(best_epoch_losses))
@@ -329,7 +335,7 @@ def main(_):
             plt.ylabel("loss")
             plt.xlabel("epoch")
             plt.title("training loss per epoch")
-            plt.savefig("%s/train_loss_per_epoch.png" % audio_ckpt_dir)
+            plt.savefig(f"{audio_ckpt_dir}/train_loss_per_epoch.png")
             # plt.show()
 
             # plot the val loss vs epoch and save to disk:
@@ -339,7 +345,7 @@ def main(_):
             plt.ylabel("loss")
             plt.xlabel("epoch")
             plt.title("validation loss per epoch")
-            plt.savefig("%s/val_loss_per_epoch.png" % audio_ckpt_dir)
+            plt.savefig(f"{audio_ckpt_dir}/val_loss_per_epoch.png")
             # plt.show()
 
 if __name__ == '__main__':

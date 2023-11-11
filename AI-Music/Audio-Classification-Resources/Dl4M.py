@@ -51,8 +51,7 @@ def read_bib(filen="dl4m.bib"):
     """
     with open(filen, "r", encoding="utf-8") as bibtex_file:
         bibtex_str = bibtex_file.read()
-    bib_database = bibtexparser.loads(bibtex_str)
-    return bib_database
+    return bibtexparser.loads(bibtex_str)
 
 
 def load_bib(filen="dl4m.bib"):
@@ -70,11 +69,7 @@ def articles_per_year(bib):
     Display the number of articles published per year
     input: file name storing articles details
     """
-    years = []
-    for entry in bib:
-        year = int(entry['year'])
-        years.append(year)
-
+    years = [int(entry['year']) for entry in bib]
     plt.xlabel('Years')
     plt.ylabel('Number of Deep Learning articles\n related to Music Information Retrieval')
     year_bins = np.arange(min(years), max(years) + 2.0, 1.0)
@@ -98,7 +93,7 @@ def get_reproducibility(bib):
         if "code" in entry:
             if entry["code"][:2] != "No":
                 cpt += 1
-    print(str(cpt) + " articles provide their source code.")
+    print(f"{str(cpt)} articles provide their source code.")
 
     return cpt
 
@@ -117,8 +112,7 @@ def get_authors(bib):
     """
     authors = []
     for entry in bib:
-        for author in entry['author'].split(" and "):
-            authors.append(author)
+        authors.extend(iter(entry['author'].split(" and ")))
     authors = sorted(set(authors))
     nb_authors = len(authors)
     print("There are", nb_authors, "researchers working on DL4M.")
@@ -127,7 +121,7 @@ def get_authors(bib):
     with open(authors_fn, "w", encoding="utf-8") as filep:
         filep.write("# List of authors\n\n")
         for author in authors:
-            filep.write("- " + author + "\n")
+            filep.write(f"- {author}" + "\n")
     print("List of authors written in", authors_fn)
 
     return nb_authors
@@ -150,17 +144,15 @@ def generate_list_articles(bib):
                 articles += "| [" + entry["title"] + "](" + entry["link"] + ") | "
             else:
                 articles += "| " + entry["title"] + " | "
-            if "code" in entry:
-                if "No" in entry["code"]:
-                    articles += "No "
-                else:
-                    if "github" in entry["code"]:
-                        articles += "[GitHub"
-                    else:
-                        articles += "[Website"
-                    articles += "](" + entry["code"] + ") "
-            else:
+            if (
+                "code" in entry
+                and "No" in entry["code"]
+                or "code" not in entry
+            ):
                 articles += "No "
+            else:
+                articles += "[GitHub" if "github" in entry["code"] else "[Website"
+                articles += "](" + entry["code"] + ") "
             articles += "|\n"
         else:
             print("ERROR: Missing title for ", entry)
@@ -195,26 +187,26 @@ def generate_summary_table(bib):
                     readme += articles
                     pasted_articles = True
             elif "papers referenced" in line:
-                readme += "- " + nb_articles + " papers referenced. "
+                readme += f"- {nb_articles} papers referenced. "
                 readme += "See the details in [dl4m.bib](dl4m.bib).\n"
             elif "other researchers" in line:
                 readme += "- If you are applying DL to music, there are ["
-                readme += nb_authors + " other researchers](authors.md) "
+                readme += f"{nb_authors} other researchers](authors.md) "
                 readme += "in your field.\n"
             elif "tasks investigated" in line:
-                readme += "- " + nb_tasks + " tasks investigated. "
+                readme += f"- {nb_tasks} tasks investigated. "
                 readme += "See the list of [tasks](tasks.md).\n"
             elif "datasets used" in line:
-                readme += "- " + nb_datasets + " datasets used. "
+                readme += f"- {nb_datasets} datasets used. "
                 readme += "See the list of [datasets](datasets.md).\n"
             elif "architectures used" in line:
-                readme += "- " + nb_archi + " architectures used. "
+                readme += f"- {nb_archi} architectures used. "
                 readme += "See the list of [architectures](architectures.md).\n"
             elif "frameworks used" in line:
-                readme += "- " + nb_framework + " frameworks used. "
+                readme += f"- {nb_framework} frameworks used. "
                 readme += "See the list of [frameworks](frameworks.md).\n"
             elif "- Only" in line:
-                readme += "- Only " + nb_repro + " articles (" + percent_repro
+                readme += f"- Only {nb_repro} articles ({percent_repro}"
                 readme += "%) provide their source code.\n"
             else:
                 readme += line
@@ -230,8 +222,8 @@ def validate_field(field_name):
     fields = ["task", "dataset", "architecture", "author", "dataaugmentation",
               "link", "title", "year", "journal", "code", "ENTRYTYPE",
               "framework"]
-    error_str = "Invalid field provided: " + field_name + ". "
-    error_str += "Valid fields: " + '[%s]' % ', '.join(map(str, fields))
+    error_str = f"Invalid field provided: {field_name}. "
+    error_str += f"Valid fields: [{', '.join(map(str, fields))}]"
     assert field_name in fields, error_str
 
 def make_autopct(values):
@@ -250,12 +242,8 @@ def pie_chart(items, field_name, max_nb_slice=8):
     """Description of pie_chart
     Display a pie_chart from the items given in input
     """
-    # plt.figure(figsize=(14, 10))
-    sizes = []
     labels = sorted(set(items))
-    for label in labels:
-        sizes.append(items.count(label))
-
+    sizes = [items.count(label) for label in labels]
     labels = np.array(labels)
     sizes = np.array(sizes)
     if len(sizes) > max_nb_slice:
@@ -269,7 +257,7 @@ def pie_chart(items, field_name, max_nb_slice=8):
             new_sizes.append(sizes[index][0])
             labels = np.delete(labels, index)
             sizes = np.delete(sizes, index)
-        new_labels.append(str(len(labels)) + " others")
+        new_labels.append(f"{len(labels)} others")
         new_sizes.append(sum(sizes))
         labels = np.array(new_labels)
         sizes = np.array(new_sizes)
@@ -292,7 +280,7 @@ def pie_chart(items, field_name, max_nb_slice=8):
     # leg = plt.legend(h[0], labels, bbox_to_anchor=(0.08, 0.4))
     # leg.draw_frame(False)
     plt.axis('equal')
-    fig_fn = "fig/pie_chart_" + field_name + ".png"
+    fig_fn = f"fig/pie_chart_{field_name}.png"
     plt.savefig(fig_fn, dpi=200)
     plt.close()
     print("Fig. with number of articles per year saved in", fig_fn)
@@ -308,22 +296,21 @@ def get_field(bib, field_name):
     for entry in bib:
         if field_name in entry:
             cur_fields = entry[field_name].split(" & ")
-            for field in cur_fields:
-                fields.append(field)
+            fields.extend(iter(cur_fields))
         else:
             nb_article_missing += 1
-    print(str(nb_article_missing) + " entries are missing the " + field_name + " field.")
+    print(f"{str(nb_article_missing)} entries are missing the {field_name} field.")
     nb_fields = len(set(fields))
-    print(str(nb_fields) + " unique " + field_name + ".")
+    print(f"{nb_fields} unique {field_name}.")
 
-    field_fn = field_name + "s.md"
+    field_fn = f"{field_name}s.md"
     with open(field_fn, "w", encoding="utf-8") as filep:
-        filep.write("# List of " + field_name + "s\n\n")
+        filep.write(f"# List of {field_name}" + "s\n\n")
         filep.write("Please refer to the list of useful acronyms used in deep ")
         filep.write("learning and music: [acronyms.md](acronyms.md).\n\n")
         for field in sorted(set(fields)):
-            filep.write("- " + field + "\n")
-    print("List of " + field_name + "s written in", field_fn)
+            filep.write(f"- {field}" + "\n")
+    print(f"List of {field_name}s written in", field_fn)
 
     pie_chart(fields, field_name)
 
@@ -339,9 +326,7 @@ def create_table(bib, outfilen="dl4m.tsv"):
     # Gather all existing field in bib
     fields = []
     for entry in bib:
-        for key in entry:
-            fields.append(key)
-
+        fields.extend(iter(entry))
     print("Available fields:")
     print(set(fields))
     fields = ["year", "ENTRYTYPE", "title", "author", "link", "code", "task",
@@ -352,10 +337,7 @@ def create_table(bib, outfilen="dl4m.tsv"):
     print(fields)
 
     separator = "\t"
-    str2write = ""
-    for field in fields:
-        str2write += field.title() + separator
-    str2write += "\n"
+    str2write = "".join(field.title() + separator for field in fields) + "\n"
     for entry in bib:
         for field in fields:
             if field in entry:

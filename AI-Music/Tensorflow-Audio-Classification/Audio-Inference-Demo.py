@@ -114,8 +114,9 @@ def inference_on_test():
             # print(te_features.shape, te_labels, te_labels.shape)
 
         right = accuracy_score(groundtruth, predicted, normalize=False) # True: return prob
-        print('all: {}, right: {}, wrong: {}, acc: {}'.format(
-            len(predicted), right, len(predicted) - right, right/(len(predicted))))
+        print(
+            f'all: {len(predicted)}, right: {right}, wrong: {len(predicted) - right}, acc: {right / len(predicted)}'
+        )
 
 
 if __name__ == '__main__':
