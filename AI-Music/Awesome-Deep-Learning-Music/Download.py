@@ -22,15 +22,15 @@ def main(args):
         item_str = item_str[:40]
 
         if 'link' not in item:
-            tqdm.write('Skip item ' + item_str + ': No link is provided')
+            tqdm.write(f'Skip item {item_str}: No link is provided')
             continue
 
         link = item['link']
         if not link.endswith('.pdf'):
-            tqdm.write('Skip item ' + item_str + ': The link is not a pdf')
+            tqdm.write(f'Skip item {item_str}: The link is not a pdf')
             continue
 
-        filename = item_str + '.pdf'
+        filename = f'{item_str}.pdf'
         item_dict = dict(name=filename, link=link, year=year, title=title, auth1=auth1)
         data.append(item_dict)
     print('')

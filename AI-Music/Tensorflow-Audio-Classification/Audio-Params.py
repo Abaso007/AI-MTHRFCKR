@@ -6,6 +6,7 @@ r"""Global parameters for the audio model.
 See audio_model.py for more information.
 """
 
+
 from os.path import join as pjoin
 
 # Training
@@ -33,9 +34,9 @@ NUM_UNITS = 10          # hidden units
 
 # Names of ops, tensors, and features.
 AUDIO_INPUT_OP_NAME = 'audio/vggish_input'
-AUDIO_INPUT_TENSOR_NAME = AUDIO_INPUT_OP_NAME + ':0'
+AUDIO_INPUT_TENSOR_NAME = f'{AUDIO_INPUT_OP_NAME}:0'
 AUDIO_OUTPUT_OP_NAME = 'audio/prediction'
-AUDIO_OUTPUT_TENSOR_NAME = AUDIO_OUTPUT_OP_NAME + ':0'
+AUDIO_OUTPUT_TENSOR_NAME = f'{AUDIO_OUTPUT_OP_NAME}:0'
 
 
 # Checkpoint
@@ -66,6 +67,6 @@ VGGISH_CHECKPOINT = pjoin(VGGISH_CHECKPOINT_DIR, VGGISH_CHECKPOINT_NAME)
 VGGISH_PCA_PARAMS = pjoin(VGGISH_CHECKPOINT_DIR, VGGISH_PCA_PARAMS_NAME)
 
 VGGISH_INPUT_OP_NAME = 'vggish/input_features'
-VGGISH_INPUT_TENSOR_NAME = VGGISH_INPUT_OP_NAME + ':0'
+VGGISH_INPUT_TENSOR_NAME = f'{VGGISH_INPUT_OP_NAME}:0'
 VGGISH_OUTPUT_OP_NAME = 'vggish/embedding'
-VGGISH_OUTPUT_TENSOR_NAME = VGGISH_OUTPUT_OP_NAME + ':0'
+VGGISH_OUTPUT_TENSOR_NAME = f'{VGGISH_OUTPUT_OP_NAME}:0'

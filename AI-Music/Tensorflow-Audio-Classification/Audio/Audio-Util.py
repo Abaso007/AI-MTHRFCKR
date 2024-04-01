@@ -11,7 +11,7 @@ import numpy as np
 
 def is_exists(path):
     if not os.path.exists(path):
-        print('Not exists: {}'.format(path))
+        print(f'Not exists: {path}')
         return False
     return True
 
@@ -126,4 +126,3 @@ if __name__ == '__main__':
         # define_vggish_slim(training=False)
         define_audio_slim(training=False)
         calculate_flops(graph)
-    pass
